@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken')
 const app = express();
 require('dotenv').config()
 const morgan = require('morgan')
@@ -10,7 +11,7 @@ const corsOptions = {
     origin: '*',
     credentials: true,
     optionSuccessStatus: 200,
-  }
+}
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'))
@@ -38,63 +39,77 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
         // Send a ping to confirm a successful connection
 
         const usersCollection = client.db('littleBirds').collection('users');
         const classesCollection = client.db('littleBirds').collection('classes');
 
+
+        // jwt api 
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1h',
+            })
+            res.send({ token})
+        })
+        // jwt api end 
+
+
+
         // classes all api
 
-    app.get('/classes' , async (req, res) => {
-            
-           const result = await classesCollection.find().toArray()
-           res.send(result);
-    })
-    app.get('/class/:id', async (req, res) => {
-        const id = req.params.id
-        const result = await classesCollection.findOne({_id: new ObjectId(id)});
-        res.send(result);
-    })
+        app.get('/classes', async (req, res) => {
+
+            const result = await classesCollection.find().toArray()
+            res.send(result);
+        })
+        app.get('/class/:id', async (req, res) => {
+            const id = req.params.id
+            const result = await classesCollection.findOne({ _id: new ObjectId(id) });
+            res.send(result);
+        })
 
 
-// user api start
-    app.put('/users/:email', async (req, res) => {
-        const email = req.params.email
-        const user = req.body
-        const query = { email: email }
-        const options = { upsert: true }
-        const updateDoc = {
-          $set: user,
-        }
-        const result = await usersCollection.updateOne(query, updateDoc, options)
-        res.send(result)
-      })
-
-    
-    app.get('/users/:email', async (req, res) => {
-        const email = req.params.email 
-        const result = await usersCollection.findOne({email: email});
-        res.send(result)
-    })
-    
+        // user api start
+        app.put('/users/:email', async (req, res) => {
+            const email = req.params.email
+            const user = req.body
+            const query = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await usersCollection.updateOne(query, updateDoc, options)
+            res.send(result)
+        })
 
 
-// user api end
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email
+            const result = await usersCollection.findOne({ email: email });
+            res.send(result)
+        })
 
 
 
+        // user api end
 
 
 
 
 
 
-      
 
- 
-               
+
+
+
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+
     } finally {
         // Ensures that the client will close when you finish/error
 
