@@ -42,6 +42,7 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
         // Send a ping to confirm a successful connection
 
+        const usersCollection = client.db('littleBirds').collection('users');
         const classesCollection = client.db('littleBirds').collection('classes');
 
         // classes all api
@@ -59,7 +60,17 @@ async function run() {
 
 
 
-
+    app.put('/users/:email', async (req, res) => {
+        const email = req.params.email
+        const user = req.body
+        const query = { email: email }
+        const options = { upsert: true }
+        const updateDoc = {
+          $set: user,
+        }
+        const result = await usersCollection.updateOne(query, updateDoc, options)
+        res.send(result)
+      })
 
 
 
