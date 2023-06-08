@@ -59,7 +59,7 @@ async function run() {
     })
 
 
-
+// user api start
     app.put('/users/:email', async (req, res) => {
         const email = req.params.email
         const user = req.body
@@ -72,8 +72,16 @@ async function run() {
         res.send(result)
       })
 
+    
+    app.get('/users/:email', async (req, res) => {
+        const email = req.params.email 
+        const result = await usersCollection.findOne({email: email});
+        res.send(result)
+    })
+    
 
 
+// user api end
 
 
 
