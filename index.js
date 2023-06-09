@@ -35,6 +35,27 @@ const client = new MongoClient(uri, {
     }
 });
 
+// verifyJwt
+
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'unauthorized access' })
+    }
+    
+    const token = authorization.split(' ')[1]
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ error: true, message: 'unauthorized access' })
+        }
+        req.decoded = decoded
+        next()
+    })
+}
+// verifyJwt
+
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -44,6 +65,7 @@ async function run() {
 
         const usersCollection = client.db('littleBirds').collection('users');
         const classesCollection = client.db('littleBirds').collection('classes');
+        const bookingsCollection = client.db('littleBirds').collection('bookings')
 
 
         // jwt api 
@@ -51,9 +73,9 @@ async function run() {
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1h',
+                expiresIn: '1d',
             })
-            res.send({ token})
+            res.send({ token })
         })
         // jwt api end 
 
@@ -92,6 +114,17 @@ async function run() {
             const result = await usersCollection.findOne({ email: email });
             res.send(result)
         })
+
+        // class booking start 
+        '/bookings'
+
+        app.post('/bookings',verifyJWT, async (req , res)=> {
+            const body = req.body;
+            const booking = await bookingsCollection.insertOne(body);
+            res.send(booking);
+            
+        })
+         // class booking start 
 
 
 
