@@ -124,6 +124,23 @@ async function run() {
             res.send(booking);
             
         })
+
+        app.get('/bookings/:id', verifyJWT, async(req, res)=> {
+
+            const id = req.params.id;
+           
+            const result = await bookingsCollection.findOne({Product_id: id})
+            res.send(result);
+        })
+        app.get('/userBookings/:email', verifyJWT, async (req, res) => {
+            
+              const email = req.params.email;
+              const query = { user_email: email };
+          
+              const result = await bookingsCollection.find(query).toArray();
+              res.send(result);
+           
+          });
          // class booking start 
 
 
