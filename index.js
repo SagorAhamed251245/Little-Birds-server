@@ -96,6 +96,7 @@ async function run() {
         })
 
 
+
         // user api start
         app.put('/users/:email', async (req, res) => {
             const email = req.params.email
@@ -115,6 +116,21 @@ async function run() {
             const result = await usersCollection.findOne({ email: email });
             res.send(result)
         })
+        app.patch('/updateSomeInfo', verifyJWT, async (req, res) => {
+            const { Product_id, available_seats, number_of_students } = req.body;
+
+            
+                const result = await classesCollection.updateOne(
+                    { _id: new ObjectId(Product_id)  },
+                    { $set: { available_seats, number_of_students } }
+                )
+                
+                res.send(result)
+               
+              
+           
+           
+        });
 
         // class booking start 
         '/bookings'
@@ -144,11 +160,12 @@ async function run() {
         });
         app.delete('/deleteBookings/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)  }
-            console.log(query);
+            const query = { _id: new ObjectId(id) }
+
             const result = await bookingsCollection.deleteOne(query);
             res.send(result)
         })
+
         // class booking start 
 
         //  booking payment start 
@@ -163,10 +180,12 @@ async function run() {
 
         app.delete('payments/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const query = {id: id }
+            const query = { id: id }
             const result = await bookingsCollection.deleteOne(query);
             res.send(result)
         })
+
+
 
         //  booking payment end
         // user api end
