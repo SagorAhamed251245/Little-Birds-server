@@ -178,6 +178,15 @@ async function run() {
 
         })
 
+        app.get('/userPayments/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const query = {user_email: email};
+            console.log(query);
+            const result = await paymentCollection.find(query).toArray();
+            res.send(result);
+
+        })
+
         app.delete('payments/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { id: id }
