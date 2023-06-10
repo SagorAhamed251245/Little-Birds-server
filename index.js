@@ -42,7 +42,7 @@ const verifyJWT = (req, res, next) => {
     if (!authorization) {
         return res.status(401).send({ error: true, message: 'unauthorized access' })
     }
-    
+
     const token = authorization.split(' ')[1]
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
@@ -66,6 +66,7 @@ async function run() {
         const usersCollection = client.db('littleBirds').collection('users');
         const classesCollection = client.db('littleBirds').collection('classes');
         const bookingsCollection = client.db('littleBirds').collection('bookings')
+        const paymentCollection = client.db('littleBirds').collection('payments')
 
 
         // jwt api 
@@ -118,33 +119,40 @@ async function run() {
         // class booking start 
         '/bookings'
 
-        app.post('/bookings',verifyJWT, async (req , res)=> {
+        app.post('/bookings', verifyJWT, async (req, res) => {
             const body = req.body;
             const booking = await bookingsCollection.insertOne(body);
             res.send(booking);
-            
+
         })
 
-        app.get('/bookings/:id', verifyJWT, async(req, res)=> {
+        app.get('/bookings/:id', verifyJWT, async (req, res) => {
 
             const id = req.params.id;
-           
-            const result = await bookingsCollection.findOne({Product_id: id})
+
+            const result = await bookingsCollection.findOne({ Product_id: id })
             res.send(result);
         })
         app.get('/userBookings/:email', verifyJWT, async (req, res) => {
-            
-              const email = req.params.email;
-              const query = { user_email: email };
-          
-              const result = await bookingsCollection.find(query).toArray();
-              res.send(result);
-           
-          });
-         // class booking start 
 
+            const email = req.params.email;
+            const query = { user_email: email };
 
+            const result = await bookingsCollection.find(query).toArray();
+            res.send(result);
 
+        });
+        // class booking start 
+
+        //  booking payment start 
+
+app.post('/payments', verifyJWT,  async (req, res) => {
+    const body = req.body;
+    const result = await paymentCollection.insertOne(body);
+    res.send(result);
+
+})
+        //  booking payment end
         // user api end
 
 
