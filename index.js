@@ -142,16 +142,32 @@ async function run() {
             res.send(result);
 
         });
+        app.delete('/deleteBookings/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)  }
+            console.log(query);
+            const result = await bookingsCollection.deleteOne(query);
+            res.send(result)
+        })
         // class booking start 
 
         //  booking payment start 
 
-app.post('/payments', verifyJWT,  async (req, res) => {
-    const body = req.body;
-    const result = await paymentCollection.insertOne(body);
-    res.send(result);
+        app.post('/payments', verifyJWT, async (req, res) => {
+            const body = req.body;
+            const result = await paymentCollection.insertOne(body);
+            res.send(result);
 
-})
+
+        })
+
+        app.delete('payments/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = {id: id }
+            const result = await bookingsCollection.deleteOne(query);
+            res.send(result)
+        })
+
         //  booking payment end
         // user api end
 
