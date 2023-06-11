@@ -91,8 +91,22 @@ async function run() {
             next();
         }
 
-        // classes all api
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email }
+            const user = await usersCollection.findOne(query);
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ error: true, message: 'forbidden message' });
+            }
+            next();
+        }
 
+        // classes all api
+        app.post('/classes', async (req, res) => {
+            const body = req.body;
+            const result = await classesCollection.insertOne(body)
+            res.send(result);
+        })
         app.get('/classes', async (req, res) => {
 
             const result = await classesCollection.find().toArray()
@@ -103,6 +117,8 @@ async function run() {
             const result = await classesCollection.findOne({ _id: new ObjectId(id) });
             res.send(result);
         })
+
+        
 
 
 
@@ -208,13 +224,32 @@ async function run() {
         //  booking payment end
         // user api end
 
-     //  teacher api
-     app.post('/paddingClass',   verifyJWT, verifyInstructor,  async (req, res) => {
-        const body = req.body ;
-        const results = await paddingClassCollection.insertOne(body);
-        res.send(results);  
+        //  teacher api
+        app.post('/paddingClass', verifyJWT, verifyInstructor, async (req, res) => {
+            const body = req.body;
+            const results = await paddingClassCollection.insertOne(body);
+            res.send(results);
 
-     })
+        })
+
+        app.get('/approvedClass', verifyJWT, verifyAdmin, async (req, res) => {
+            const results = await paddingClassCollection.find().toArray()
+            res.send(results);
+        })
+        app.post('/PostClasses', async (req, res) => {
+            const body = req.body;
+            const result = await classesCollection.insertOne(body)
+            res.send(result);
+        })
+
+        app.delete('/deleteClass/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const result = await paddingClassCollection.deleteOne({ _id: new ObjectId(id) });
+            res.send(result);
+        })
+
+
+        //  admin api 
 
 
 
