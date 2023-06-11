@@ -67,6 +67,7 @@ async function run() {
         const classesCollection = client.db('littleBirds').collection('classes');
         const bookingsCollection = client.db('littleBirds').collection('bookings')
         const paymentCollection = client.db('littleBirds').collection('payments')
+        const paddingClassCollection = client.db('littleBirds').collection('paddingClasses')
 
 
         // jwt api 
@@ -80,7 +81,15 @@ async function run() {
         })
         // jwt api end 
 
-
+        const verifyInstructor = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email }
+            const user = await usersCollection.findOne(query);
+            if (user?.role !== 'teacher') {
+                return res.status(403).send({ error: true, message: 'forbidden message' });
+            }
+            next();
+        }
 
         // classes all api
 
@@ -119,17 +128,17 @@ async function run() {
         app.patch('/updateSomeInfo', verifyJWT, async (req, res) => {
             const { Product_id, available_seats, number_of_students } = req.body;
 
-            
-                const result = await classesCollection.updateOne(
-                    { _id: new ObjectId(Product_id)  },
-                    { $set: { available_seats, number_of_students } }
-                )
-                
-                res.send(result)
-               
-              
-           
-           
+
+            const result = await classesCollection.updateOne(
+                { _id: new ObjectId(Product_id) },
+                { $set: { available_seats, number_of_students } }
+            )
+
+            res.send(result)
+
+
+
+
         });
 
         // class booking start 
@@ -180,7 +189,7 @@ async function run() {
 
         app.get('/userPayments/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
-            const query = {user_email: email};
+            const query = { user_email: email };
             console.log(query);
             const result = await paymentCollection.find(query).toArray();
             res.send(result);
@@ -198,6 +207,14 @@ async function run() {
 
         //  booking payment end
         // user api end
+
+     //  teacher api
+     app.post('/paddingClass',   verifyJWT, verifyInstructor,  async (req, res) => {
+        const body = req.body ;
+        const results = await paddingClassCollection.insertOne(body);
+        res.send(results);  
+
+     })
 
 
 
