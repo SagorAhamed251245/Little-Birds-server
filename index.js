@@ -135,6 +135,8 @@ async function run() {
             res.send(result)
         })
 
+        
+
 
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email
@@ -246,6 +248,26 @@ async function run() {
             const id = req.params.id
             const result = await paddingClassCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
+        })
+
+        app.patch('/UpdateUsers/:email', async (req, res) => {
+            const email = req.params.email;
+            const { role } = req.body;
+            const query = { email: email };
+            const updateDoc = { $set: { role: role } };
+          
+            try {
+              const result = await usersCollection.updateOne(query, updateDoc);
+              res.send(result);
+            } catch (error) {
+              console.error('Error updating user:', error);
+              res.status(500).send('Error updating user');
+            }
+          });
+
+        app.get('/allUsers', verifyJWT, verifyAdmin,  async (req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result)
         })
 
 
