@@ -68,6 +68,7 @@ async function run() {
         const bookingsCollection = client.db('littleBirds').collection('bookings')
         const paymentCollection = client.db('littleBirds').collection('payments')
         const paddingClassCollection = client.db('littleBirds').collection('paddingClasses')
+        const feedbackCollection = client.db('littleBirds').collection('feedback')
 
 
         // jwt api 
@@ -286,6 +287,13 @@ async function run() {
         app.get('/allUsers', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray();
             res.send(result)
+        })
+
+        app.post('/feedbackByAdmin',verifyJWT, verifyAdmin, async (req, res)=> {
+            const body = req.body ;
+            const result = await feedbackCollection.insertOne(body)
+            res.send(result);
+
         })
 
 
