@@ -239,6 +239,12 @@ async function run() {
             const results = await paddingClassCollection.find().toArray()
             res.send(results);
         })
+        app.get('/MyClass/:email', verifyJWT,   async (req, res) => {
+            const email = req.params.email;
+            const query = { instructor_email: email}
+            const results = await paddingClassCollection.find(query).toArray()
+            res.send(results);
+        })
         app.post('/PostClasses', verifyJWT, verifyAdmin, async (req, res) => {
            
             const body = req.body;
@@ -274,6 +280,20 @@ async function run() {
             const { status } = req.body;
             const query = { _id: new ObjectId(id) };
             const updateDoc = { $set: { status: status } };
+
+            try {
+                const result = await paddingClassCollection.updateOne(query, updateDoc);
+                res.send(result);
+            } catch (error) {
+                console.error('Error updating Status:', error);
+                res.status(500).send('Error updating status');
+            }
+        });
+        app.patch('/UpdateFeedback/:id', async (req, res) => {
+            const id = req.params.id;
+            const { feedback } = req.body;
+            const query = { _id: new ObjectId(id) };
+            const updateDoc = { $set: { feedback: feedback } };
 
             try {
                 const result = await paddingClassCollection.updateOne(query, updateDoc);
