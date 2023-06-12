@@ -118,7 +118,7 @@ async function run() {
             res.send(result);
         })
 
-        
+
 
 
 
@@ -135,7 +135,7 @@ async function run() {
             res.send(result)
         })
 
-        
+
 
 
         app.get('/users/:email', async (req, res) => {
@@ -238,11 +238,14 @@ async function run() {
             const results = await paddingClassCollection.find().toArray()
             res.send(results);
         })
-        app.post('/PostClasses', async (req, res) => {
+        app.post('/PostClasses', verifyJWT, verifyAdmin, async (req, res) => {
+           
             const body = req.body;
-            const result = await classesCollection.insertOne(body)
-            res.send(result);
-        })
+              const result = await classesCollection.insertOne(body);
+              res.send(result);
+            
+          });
+          
 
         app.delete('/deleteClass/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
@@ -255,17 +258,32 @@ async function run() {
             const { role } = req.body;
             const query = { email: email };
             const updateDoc = { $set: { role: role } };
-          
-            try {
-              const result = await usersCollection.updateOne(query, updateDoc);
-              res.send(result);
-            } catch (error) {
-              console.error('Error updating user:', error);
-              res.status(500).send('Error updating user');
-            }
-          });
 
-        app.get('/allUsers', verifyJWT, verifyAdmin,  async (req, res) => {
+            try {
+                const result = await usersCollection.updateOne(query, updateDoc);
+                res.send(result);
+            } catch (error) {
+                console.error('Error updating user:', error);
+                res.status(500).send('Error updating user');
+            }
+        });
+
+        app.patch('/UpdateStatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const { status } = req.body;
+            const query = { _id: new ObjectId(id) };
+            const updateDoc = { $set: { status: status } };
+
+            try {
+                const result = await paddingClassCollection.updateOne(query, updateDoc);
+                res.send(result);
+            } catch (error) {
+                console.error('Error updating Status:', error);
+                res.status(500).send('Error updating status');
+            }
+        });
+
+        app.get('/allUsers', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray();
             res.send(result)
         })
