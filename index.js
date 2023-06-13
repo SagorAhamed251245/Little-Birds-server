@@ -118,6 +118,17 @@ async function run() {
             const result = await classesCollection.findOne({ _id: new ObjectId(id) });
             res.send(result);
         })
+        app.get('/myActiveClass/:email', verifyJWT, verifyInstructor, async (req, res) => {
+            const email = req.params.email;
+            try {
+              const result = await classesCollection.find({ instructor_email: email }).toArray();
+              res.send(result);
+            } catch (error) {
+              console.error('Error retrieving class:', error);
+              res.status(500).send('Error retrieving class');
+            }
+          });
+          
 
 
 
