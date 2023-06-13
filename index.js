@@ -3,6 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken')
 const app = express();
 require('dotenv').config()
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const morgan = require('morgan')
 const port = process.env.PORT || 5000;
 
@@ -121,14 +122,14 @@ async function run() {
         app.get('/myActiveClass/:email', verifyJWT, verifyInstructor, async (req, res) => {
             const email = req.params.email;
             try {
-              const result = await classesCollection.find({ instructor_email: email }).toArray();
-              res.send(result);
+                const result = await classesCollection.find({ instructor_email: email }).toArray();
+                res.send(result);
             } catch (error) {
-              console.error('Error retrieving class:', error);
-              res.status(500).send('Error retrieving class');
+                console.error('Error retrieving class:', error);
+                res.status(500).send('Error retrieving class');
             }
-          });
-          
+        });
+
 
 
 
@@ -250,20 +251,20 @@ async function run() {
             const results = await paddingClassCollection.find().toArray()
             res.send(results);
         })
-        app.get('/MyClass/:email', verifyJWT,   async (req, res) => {
+        app.get('/MyClass/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
-            const query = { instructor_email: email}
+            const query = { instructor_email: email }
             const results = await paddingClassCollection.find(query).toArray()
             res.send(results);
         })
         app.post('/PostClasses', verifyJWT, verifyAdmin, async (req, res) => {
-           
+
             const body = req.body;
-              const result = await classesCollection.insertOne(body);
-              res.send(result);
-            
-          });
-          
+            const result = await classesCollection.insertOne(body);
+            res.send(result);
+
+        });
+
 
         app.delete('/deleteClass/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id
@@ -320,8 +321,8 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/feedbackByAdmin',verifyJWT, verifyAdmin, async (req, res)=> {
-            const body = req.body ;
+        app.post('/feedbackByAdmin', verifyJWT, verifyAdmin, async (req, res) => {
+            const body = req.body;
             const result = await feedbackCollection.insertOne(body)
             res.send(result);
 
@@ -330,7 +331,20 @@ async function run() {
 
         //  admin api 
 
+        // payment 
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const { price } = req.body;
+            const amount = parseInt(price * 100);
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
 
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        })
 
 
 
