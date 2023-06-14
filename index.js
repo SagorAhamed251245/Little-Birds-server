@@ -114,6 +114,41 @@ async function run() {
             const result = await classesCollection.find().toArray()
             res.send(result);
         })
+        app.get('/popularClasses', async (req, res) => {
+
+            const result = await classesCollection.find().sort({ number_of_students: -1 }).limit(6).toArray();
+            res.send(result);
+
+
+        });
+
+        app.get('/popular-instructors', async (req, res) => {
+            try {
+                const instructors = await classesCollection.aggregate([
+                    {
+                        $group: {
+                            _id: "$instructor",
+                            total_students: { $sum: "$number_of_students" },
+                            email: { $first: "$instructor_email" },
+                            name: { $first: "$instructor" },
+                            image: { $first: "$instructor_image" }
+                        }
+                    },
+                    {
+                        $sort: { total_students: -1 }
+                    },
+                    {
+                        $limit: 6
+                    }
+                ]).toArray();
+
+                res.send(instructors);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
         app.get('/class/:id', async (req, res) => {
             const id = req.params.id
             const result = await classesCollection.findOne({ _id: new ObjectId(id) });
