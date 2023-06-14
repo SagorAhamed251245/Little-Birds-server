@@ -184,7 +184,15 @@ async function run() {
         })
 
 
-
+        app.get('/teachers', async (req, res) => {
+            try {
+              const teachers = await usersCollection.find({ role: 'teacher' }).toArray();
+              res.send(teachers);
+            } catch (error) {
+              console.error(error);
+              res.status(500).send('Internal Server Error');
+            }
+          });
 
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email
@@ -257,7 +265,7 @@ async function run() {
             const email = req.params.email;
             const query = { user_email: email };
             console.log(query);
-            const result = await paymentCollection.find(query).toArray();
+            const result = await paymentCollection.find(query).sort({ date: -1 }).toArray();
             res.send(result);
 
         })
